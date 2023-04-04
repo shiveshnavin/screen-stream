@@ -10,7 +10,7 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 app.get('/stream', (req, res) => {
     const command = ffmpeg()
         .input(':10.0')
-        .inputFormat('x11grab')
+        .inputFormat('xcbgrab')
         .videoCodec('libx264')
         .inputFPS(25)
         .size('1024x768')
@@ -24,7 +24,8 @@ app.get('/stream', (req, res) => {
     res.writeHead(200, {
         'Content-Type': 'video/mp2t',
         'Connection': 'keep-alive',
-        'Transfer-Encoding': 'chunked'
+        'Transfer-Encoding': 'chunked',
+        'Content-Disposition': 'inline'
     });
 
     command.pipe(res, { end: true });
