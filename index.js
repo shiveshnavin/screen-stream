@@ -1,55 +1,35 @@
 const express = require('express');
-const child_process = require('child_process');
-
 const app = express();
+const http = require('http').createServer(app);
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('ffmpeg-static');
+
+// Set the path to the FFmpeg binary within the Node.js application
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 app.get('/stream', (req, res) => {
-    // Check if ffmpeg is available in PATH
-    const ffmpegPath = child_process.execSync('which ffmpeg').toString().trim();
-    if (!ffmpegPath) {
-        return res.status(500).send('FFmpeg is not installed or not available in PATH');
-    }
-    // Set the response headers to indicate that we're streaming video
+    const command = ffmpeg()
+        .input(':10.0')
+        .inputFormat('x11grab')
+        .videoCodec('libx264')
+        .inputFPS(25)
+        .size('1024x768')
+        .outputFormat('mpegts')
+        .outputOptions(['-crf 0', '-preset ultrafast'])
+        .on('error', (err) => {
+            console.error(`FFmpeg error: ${err.message}`);
+            res.write(`FFmpeg error: ${err.message}`);
+        });
+
     res.writeHead(200, {
-        'Content-Type': 'video/mp4',
+        'Content-Type': 'video/mp2t',
+        'Connection': 'keep-alive',
         'Transfer-Encoding': 'chunked'
     });
 
-    // Spawn the ffmpeg process as a child process
-    const ffmpegProcess = child_process.spawn('ffmpeg', [
-        '-f', 'x11grab',
-        '-probesize', '50M',
-        '-r', '25',
-        '-s', '1024x768',
-        '-i', ':10.0',
-        '-c:v', 'libx264',
-        '-qp', '0',
-        // '-t', '10',
-        '-f', 'mpegts',
-        'pipe:1'
-    ]);
-    // Pipe the ffmpeg output to the HTTP response
-    ffmpegProcess.stdout.pipe(res);
-
-    // Handle any errors that occur
-    ffmpegProcess.stderr.on('data', (data) => {
-        console.error(`FFmpeg error: ${data}`);
-    });
-
-    ffmpegProcess.on('error', (error) => {
-        console.error(`FFmpeg process error: ${error}`);
-    });
-
-    ffmpegProcess.on('exit', (code, signal) => {
-        console.log(`FFmpeg process exited with code ${code} and signal ${signal}`);
-    });
-
-    res.on('close', () => {
-        console.log('Client disconnected, stopping ffmpeg process');
-        ffmpegProcess.kill();
-    });
+    command.pipe(res, { end: true });
 });
 
-app.listen(5555, () => {
-    console.log('Server running on port 5555');
+http.listen(5599, () => {
+    console.log('Screen stream on http://127.0.0.1:5599/stream');
 });
