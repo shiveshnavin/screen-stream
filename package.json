@@ -9,12 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "electron": "^23.2.1",
     "express": "^4.18.2",
-    "fluent-ffmpeg": "^2.1.2",
-    "http": "^0.0.1-security",
-    "node-rtsp-stream": "^0.0.9",
-    "screenshot-desktop": "^0.0.0-development",
-    "socket.io": "^4.6.1"
+    "http": "^0.0.1-security"
   }
 }

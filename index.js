@@ -4,6 +4,11 @@ const child_process = require('child_process');
 const app = express();
 
 app.get('/stream', (req, res) => {
+    // Check if ffmpeg is available in PATH
+    const ffmpegPath = child_process.execSync('which ffmpeg').toString().trim();
+    if (!ffmpegPath) {
+        return res.status(500).send('FFmpeg is not installed or not available in PATH');
+    }
     // Set the response headers to indicate that we're streaming video
     res.writeHead(200, {
         'Content-Type': 'video/mp4',
@@ -37,6 +42,11 @@ app.get('/stream', (req, res) => {
 
     ffmpegProcess.on('exit', (code, signal) => {
         console.log(`FFmpeg process exited with code ${code} and signal ${signal}`);
+    });
+
+    res.on('close', () => {
+        console.log('Client disconnected, stopping ffmpeg process');
+        ffmpegProcess.kill();
     });
 });
 
