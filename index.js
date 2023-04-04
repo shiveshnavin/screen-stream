@@ -3,6 +3,7 @@ const app = express();
 const http = require('http').createServer(app);
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
+const path = require('path')
 
 // Set the path to the FFmpeg binary within the Node.js application
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -10,7 +11,7 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 app.get('/stream', (req, res) => {
     const command = ffmpeg()
         .input(':10.0')
-        .inputFormat('xcbgrab')
+        .inputFormat('x11grab')
         .videoCodec('libx264')
         .inputFPS(25)
         .size('1024x768')
@@ -24,12 +25,19 @@ app.get('/stream', (req, res) => {
     res.writeHead(200, {
         'Content-Type': 'video/mp2t',
         'Connection': 'keep-alive',
-        'Transfer-Encoding': 'chunked',
+        'Transfer-Encoding': 'binary', // Set the content transfer encoding to binary
+        'Accept-Ranges': 'bytes', // Set the accept ranges header to bytes
         'Content-Disposition': 'inline'
     });
 
     command.pipe(res, { end: true });
 });
+
+app.get('/', (req, res) => {
+    const htmlPath = path.join(__dirname, 'public', 'index.html');
+    res.sendFile(htmlPath);
+});
+
 
 http.listen(5599, () => {
     console.log('Screen stream on http://127.0.0.1:5599/stream');

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Video Stream</title>
+    <style>
+        html,
+        body,
+        video {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+        }
+    </style>
+</head>
+
+<body>
+    <video id="video-player" controls autoplay onclick="enterFullScreen()">
+        <source src="/stream" type="application/x-mpegURL">
+    </video>
+
+    <script>
+        const videoPlayer = document.getElementById('video-player');
+
+        function enterFullScreen() {
+            if (videoPlayer.requestFullscreen) {
+                videoPlayer.requestFullscreen();
+            } else if (videoPlayer.webkitRequestFullscreen) { /* Safari */
+                videoPlayer.webkitRequestFullscreen();
+            } else if (videoPlayer.msRequestFullscreen) { /* IE11 */
+                videoPlayer.msRequestFullscreen();
+            }
+        }
+    </script>
+</body>
+
+</html>
